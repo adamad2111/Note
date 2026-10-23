@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Today’s tasks</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;800&family=Instrument+Sans:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#F4F3FA;--surface:#FFFFFF;--ink:#1E1B3A;--muted:#716E8C;--line:#E4E2F0;
+  --accent:#5B47F5;--accent-soft:#ECE9FF;--accent-ink:#FFFFFF;--ok:#22A56A;--sun:#FFB84D;--danger:#D2402F;
+  --shadow:0 1px 2px rgba(30,27,58,.06),0 6px 18px rgba(30,27,58,.06);
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F0E1A;--surface:#1A1830;--ink:#F0EEFF;--muted:#9A97B8;--line:#2A2746;
+    --accent:#8F7FFF;--accent-soft:#2A2550;--accent-ink:#12102A;--ok:#4AD38F;--danger:#FF8272;
+    --shadow:0 1px 2px rgba(0,0,0,.4);color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0F0E1A;--surface:#1A1830;--ink:#F0EEFF;--muted:#9A97B8;--line:#2A2746;
+  --accent:#8F7FFF;--accent-soft:#2A2550;--accent-ink:#12102A;--ok:#4AD38F;--danger:#FF8272;
+  --shadow:0 1px 2px rgba(0,0,0,.4);color-scheme:dark;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.45 "Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:560px;margin:0 auto;padding:22px 16px 270px}
+button{font:inherit;color:inherit}
+button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}
+h1{font:800 30px/1.1 "Bricolage Grotesque","Instrument Sans",system-ui,sans-serif;margin:0;letter-spacing:-.02em}
+.date{color:var(--muted);margin:4px 0 0;font-size:15px}
+.theme{flex:none;width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:var(--surface);cursor:pointer;font-size:18px;box-shadow:var(--shadow)}
+
+.hero{display:flex;align-items:center;gap:16px;background:var(--surface);border-radius:22px;padding:18px;box-shadow:var(--shadow);margin-bottom:18px}
+.ring{flex:none;width:72px;height:72px;position:relative}
+.ring svg{width:72px;height:72px;transform:rotate(-90deg)}
+.ring circle{fill:none;stroke-width:8;stroke-linecap:round}
+.ring .tr{stroke:var(--accent-soft)}
+.ring .pg{stroke:var(--accent);stroke-dasharray:188.5;stroke-dashoffset:188.5;transition:stroke-dashoffset .5s cubic-bezier(.3,.8,.3,1)}
+.ring b{position:absolute;inset:0;display:grid;place-items:center;font:800 17px "Bricolage Grotesque",sans-serif}
+.hero p{margin:0}
+.hero .big{font:800 20px/1.2 "Bricolage Grotesque","Instrument Sans",sans-serif}
+.hero .sub{color:var(--muted);font-size:15px;margin-top:2px}
+
+.seg{display:grid;grid-template-columns:repeat(4,1fr);background:var(--accent-soft);border-radius:14px;padding:4px;margin-bottom:16px}
+.seg button{border:0;background:transparent;border-radius:11px;padding:10px 2px;font-weight:600;font-size:14px;color:var(--muted);cursor:pointer;min-height:44px}
+.seg button[aria-pressed=true]{background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}
+
+ul{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+li.task{display:flex;align-items:center;gap:6px;background:var(--surface);border-radius:18px;padding:6px 6px 6px 8px;box-shadow:var(--shadow);min-height:64px}
+.chk{flex:none;width:48px;height:48px;border:0;background:transparent;cursor:pointer;display:grid;place-items:center;padding:0}
+.chk span{width:28px;height:28px;border-radius:50%;border:2.5px solid var(--muted);display:grid;place-items:center;color:var(--accent-ink);transition:background .15s,border-color .15s}
+.chk svg{width:15px;height:15px;opacity:0;transform:scale(.4);transition:opacity .15s,transform .2s cubic-bezier(.3,1.6,.5,1)}
+li.done .chk span{background:var(--ok);border-color:var(--ok)}
+li.done .chk svg{opacity:1;transform:scale(1)}
+.txt{flex:1;min-width:0;padding:6px 0;word-break:break-word}
+.txt b{display:block;font-weight:500;font-size:17px}
+li.done .txt b{color:var(--muted);text-decoration:line-through}
+.meta{display:inline-block;margin-top:4px;font-size:13px;font-weight:500;color:var(--muted);background:var(--accent-soft);border-radius:999px;padding:2px 10px;margin-right:6px}
+.meta.late{color:var(--danger);background:transparent;border:1px solid var(--danger)}
+.del{flex:none;width:44px;height:44px;border:0;background:transparent;color:var(--muted);font-size:24px;cursor:pointer;border-radius:12px}
+.del:active{color:var(--danger)}
+.empty{text-align:center;color:var(--muted);padding:34px 16px;border:2px dashed var(--line);border-radius:18px}
+.empty b{display:block;color:var(--ink);font:800 18px "Bricolage Grotesque",sans-serif;margin-bottom:4px}
+.clear{display:block;margin:16px auto 0;background:none;border:0;color:var(--muted);text-decoration:underline;cursor:pointer;padding:12px}
+
+.composer{position:fixed;left:0;right:0;bottom:0;z-index:5;background:var(--surface);border-top:1px solid var(--line);box-shadow:0 -8px 24px rgba(30,27,58,.08);border-radius:22px 22px 0 0;padding:12px 14px calc(12px + env(safe-area-inset-bottom,0px))}
+.composer>div{max-width:560px;margin:0 auto}
+.row{display:flex;gap:8px}
+.row input[type=text]{flex:1;min-width:0;font:inherit;font-size:16px;color:var(--ink);background:var(--bg);border:1px solid transparent;border-radius:14px;padding:0 16px;height:52px}
+.row input[type=text]::placeholder{color:var(--muted)}
+.add{flex:none;width:52px;height:52px;border:0;border-radius:14px;background:var(--accent);color:var(--accent-ink);font-size:28px;font-weight:500;cursor:pointer}
+.add:active{transform:scale(.95)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.chip{position:relative;display:flex;align-items:center;gap:8px;flex:none;height:42px;padding:0 14px;border-radius:999px;border:1px solid var(--line);background:var(--surface);font-size:15px;font-weight:500;cursor:pointer;color:var(--muted)}
+.chip.on{background:var(--accent-soft);border-color:var(--accent);color:var(--ink)}
+.chip input[type=time]{font:inherit;font-size:16px;color:var(--ink);background:transparent;border:0;padding:0;width:104px}
+.chip input[type=date]{font:inherit;font-size:16px;color:var(--ink);background:transparent;border:0;padding:0;width:130px}
+.chip input[type=checkbox]{position:absolute;opacity:0;inset:0;width:100%;height:100%;margin:0;cursor:pointer}
+.txt{cursor:pointer}
+li.task{--c:hsl(var(--h,255) 70% 50%);background:color-mix(in srgb,var(--c) 13%,var(--surface));border-left:6px solid var(--c)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) li.task{--c:hsl(var(--h,255) 85% 70%)}}
+:root[data-theme="dark"] li.task{--c:hsl(var(--h,255) 85% 70%)}
+li.task .chk span{border-color:var(--c)}
+li.task.done .chk span{background:var(--c);border-color:var(--c)}
+li.task .meta:not(.late){background:color-mix(in srgb,var(--c) 22%,transparent);color:var(--ink)}
+li.editing{display:block;padding:14px}
+.ed-text{width:100%;font:inherit;font-size:16px;color:var(--ink);background:var(--bg);border:1px solid var(--accent);border-radius:12px;padding:0 14px;height:48px}
+.ed-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.ed-act{display:flex;gap:8px;justify-content:flex-end;margin-top:12px}
+.ed-act button{height:44px;padding:0 20px;border-radius:12px;border:1px solid var(--line);background:transparent;font-weight:600;cursor:pointer}
+.ed-act .sv{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<main>
+  <div class="top">
+    <div><h1 id="greet">Today</h1><p class="date" id="date"></p></div>
+    <button class="theme" id="theme" aria-label="Switch light or dark theme">◐</button>
+  </div>
+
+  <section class="hero" aria-live="polite">
+    <div class="ring"><svg viewBox="0 0 72 72"><circle class="tr" cx="36" cy="36" r="30"/><circle class="pg" id="pg" cx="36" cy="36" r="30"/></svg><b id="pct">0%</b></div>
+    <div><p class="big" id="big">No tasks yet</p><p class="sub" id="sub">Add one below to get started</p></div>
+  </section>
+
+  <div class="seg" role="group" aria-label="Filter tasks">
+    <button data-f="today" aria-pressed="true">Today</button>
+    <button data-f="upcoming" aria-pressed="false">Upcoming</button>
+    <button data-f="daily" aria-pressed="false">Daily</button>
+    <button data-f="all" aria-pressed="false">All</button>
+  </div>
+
+  <ul id="list"></ul>
+  <button class="clear" id="clear">Clear finished one-off tasks</button>
+</main>
+
+<form class="composer" id="form" autocomplete="off"><div>
+  <div class="row">
+    <input type="text" id="text" placeholder="Add a task" maxlength="120" aria-label="Task name" enterkeyhint="done" required>
+    <button class="add" type="submit" aria-label="Add task">+</button>
+  </div>
+  <div class="chips">
+    <label class="chip" id="dateChip">Date <input type="date" id="due" aria-label="Task date"></label>
+    <label class="chip" id="timeChip">Time <input type="time" id="time" aria-label="Task time"></label>
+    <label class="chip" id="dailyChip"><input type="checkbox" id="daily"> Every day</label>
+  </div>
+</div></form>
+
+<script>
+(function(){
+  var KEY="daily-task-manager-v1",tasks=[],filter="today",memory=null,editing=null,C=188.5;
+  var HUES=[255,340,25,150,205,45,290,175];
+  function nextHue(){var n=HUES.map(function(h){return tasks.filter(function(t){return t.h===h}).length});return HUES[n.indexOf(Math.min.apply(null,n))]}
+  function load(){try{var r=localStorage.getItem(KEY);if(r){tasks=JSON.parse(r)||[]}}catch(e){}if(!tasks.length&&memory)tasks=memory;tasks.forEach(function(t){if(t.h==null)t.h=nextHue()})}
+  var store=null,saveT=null;
+  function save(){memory=tasks;try{localStorage.setItem(KEY,JSON.stringify(tasks))}catch(e){}if(store){clearTimeout(saveT);saveT=setTimeout(function(){saveT=null;store.set({list:tasks}).catch(function(){})},250)}}
+  function ts(){var d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+  function isDone(t){return t.daily?t.doneOn===ts():!!t.doneOn}
+  function nowHM(){var d=new Date();return String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0")}
+  function fmt(hm){var p=hm.split(":"),h=+p[0],s=h>=12?"PM":"AM";h=h%12||12;return h+":"+p[1]+" "+s}
+  function esc(s){return s.replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+  function $(id){return document.getElementById(id)}
+  function later(t){return !!t.date&&t.date>ts()}
+  function dlabel(s){var n=new Date(),p=s.split("-"),d=new Date(+p[0],+p[1]-1,+p[2]),m=new Date(n.getFullYear(),n.getMonth(),n.getDate()+1),ms=m.getFullYear()+"-"+String(m.getMonth()+1).padStart(2,"0")+"-"+String(m.getDate()).padStart(2,"0");if(s===ts())return "Today";if(s===ms)return "Tomorrow";return d.toLocaleDateString(undefined,{weekday:"short",month:"short",day:"numeric"})}
+
+  function visible(){
+    var td=ts();
+    return tasks.filter(function(t){
+      if(filter==="upcoming")return later(t);if(filter==="daily")return t.daily;
+      if(filter==="all")return true;
+      return !later(t)&&(t.daily||!t.doneOn||t.doneOn===td);
+    }).sort(function(a,b){
+      var x=isDone(a),y=isDone(b);if(x!==y)return x?1:-1;
+      var da=a.date||"",db=b.date||"";if(da!==db&&filter!=="today"){return da<db?-1:1}if(a.time&&b.time)return a.time<b.time?-1:1;
+      if(a.time)return -1;if(b.time)return 1;return a.id-b.id;
+    });
+  }
+
+  function render(){
+    var d=new Date(),h=d.getHours();
+    $("greet").textContent=h<12?"Good morning":h<18?"Good afternoon":"Good evening";
+    $("date").textContent=d.toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric"});
+
+    var td=ts();$("due").min=td;var scope=tasks.filter(function(t){return !later(t)&&(t.daily||!t.doneOn||t.doneOn===td)});
+    var done=scope.filter(isDone).length,total=scope.length,p=total?Math.round(done/total*100):0;
+    $("pg").style.strokeDashoffset=C-C*p/100;
+    $("pct").textContent=p+"%";
+    if(!total){$("big").textContent="No tasks yet";$("sub").textContent="Add one below to get started"}
+    else if(done===total){$("big").textContent="All done for today";$("sub").textContent="Nice work. "+total+" of "+total+" finished"}
+    else{$("big").textContent=done+" of "+total+" done";$("sub").textContent=(total-done)+" left for today"}
+
+    var items=visible(),now=nowHM(),list=$("list");
+    if(!items.length){
+      list.innerHTML='<li class="empty"><b>'+(filter==="daily"?"No daily habits yet":filter==="upcoming"?"Nothing scheduled":"Nothing here yet")+"</b>"+(filter==="daily"?"Turn on Every day when you add a task.":filter==="upcoming"?"Pick a future Date when you add a task.":"Type a task below and tap +.")+"</li>";
+    }else{
+      list.innerHTML=items.map(function(t){
+        if(t.id===editing)return editForm(t);var dn=isDone(t),late=!dn&&(t.daily?(!!t.time&&t.time<now&&!later(t)):((!!t.date&&t.date<td)||((!t.date||t.date===td)&&!!t.time&&t.time<now))),dl=late&&!t.daily&&!!t.date&&t.date<td,m="";
+        if(t.date)m+='<span class="meta'+(dl?" late":"")+'">'+dlabel(t.date)+(dl?" overdue":"")+"</span>";if(t.time)m+='<span class="meta'+(late&&!dl?" late":"")+'">'+fmt(t.time)+(late&&!dl?" overdue":"")+"</span>";
+        if(t.daily)m+='<span class="meta">Every day</span>';
+        return '<li class="task'+(dn?" done":"")+'" data-id="'+t.id+'" style="--h:'+t.h+'"><button class="chk" aria-label="'+(dn?"Mark not done: ":"Mark done: ")+esc(t.text)+'"><span><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 7.5l3 3 6-7"/></svg></span></button><div class="txt"><b>'+esc(t.text)+"</b>"+m+'</div><button class="del" aria-label="Delete '+esc(t.text)+'">×</button></li>';
+      }).join("");
+    }
+    document.querySelectorAll(".seg button").forEach(function(b){b.setAttribute("aria-pressed",b.dataset.f===filter)});
+    $("clear").style.display=tasks.some(function(t){return !t.daily&&t.doneOn})?"block":"none";
+  }
+
+  function editForm(t){
+    return '<li class="task editing" data-id="'+t.id+'" style="--h:'+t.h+'"><input class="ed-text" type="text" value="'+esc(t.text)+'" maxlength="120" aria-label="Task name"><div class="ed-row"><label class="chip'+(t.date?' on':'')+'">Date <input class="ed-date" type="date" value="'+(t.date||'')+'" aria-label="Task date"></label><label class="chip'+(t.time?' on':'')+'">Time <input class="ed-time" type="time" value="'+(t.time||'')+'" aria-label="Task time"></label><label class="chip'+(t.daily?' on':'')+'"><input class="ed-daily" type="checkbox"'+(t.daily?' checked':'')+'> Repeat every day</label></div><div class="ed-act"><button class="cx" type="button">Cancel</button><button class="sv" type="button">Save changes</button></div></li>';
+  }
+  function chips(){
+    $("timeChip").classList.toggle("on",!!$("time").value);$("dateChip").classList.toggle("on",!!$("due").value);
+    $("dailyChip").classList.toggle("on",$("daily").checked);
+  }
+  $("time").addEventListener("input",chips);$("due").addEventListener("input",chips);$("due").addEventListener("change",chips);
+  $("daily").addEventListener("change",chips);
+
+  $("form").addEventListener("submit",function(e){
+    e.preventDefault();
+    var tx=$("text"),v=tx.value.trim();if(!v)return;
+    tasks.push({id:Date.now(),text:v,time:$("time").value||"",date:$("due").value||"",daily:$("daily").checked,doneOn:null,h:nextHue()});
+    var dv=$("due").value;if(dv>ts()&&filter==="today")filter="upcoming";tx.value="";$("time").value="";$("due").value="";chips();save();render();tx.focus();
+  });
+
+  $("list").addEventListener("click",function(e){
+    var li=e.target.closest("li[data-id]");if(!li)return;
+    var id=+li.dataset.id,t=tasks.filter(function(x){return x.id===id})[0];if(!t)return;
+    if(e.target.closest(".chk")){t.doneOn=isDone(t)?null:ts();save();render()}
+    else if(e.target.closest(".sv")){var v=li.querySelector(".ed-text").value.trim();if(v){t.text=v;t.time=li.querySelector(".ed-time").value||"";t.date=li.querySelector(".ed-date").value||"";var nd=li.querySelector(".ed-daily").checked;if(nd!==!!t.daily){t.daily=nd;t.doneOn=null}save()}editing=null;render()}
+    else if(e.target.closest(".cx")){editing=null;render()}
+    else if(e.target.classList.contains("ed-daily")){e.target.parentNode.classList.toggle("on",e.target.checked)}
+    else if(e.target.closest(".txt")){editing=id;render();var el=document.querySelector(".ed-text");if(el){el.focus();el.setSelectionRange(el.value.length,el.value.length)}}
+    else if(e.target.closest(".del")){tasks=tasks.filter(function(x){return x.id!==id});save();render()}
+  });
+
+  document.querySelectorAll(".seg button").forEach(function(b){b.addEventListener("click",function(){filter=b.dataset.f;render()})});
+  $("list").addEventListener("keydown",function(e){
+    if(e.key==="Enter"&&e.target.classList.contains("ed-text")){e.preventDefault();e.target.closest("li").querySelector(".sv").click()}
+    if(e.key==="Escape"&&editing!==null){editing=null;render()}
+  });
+  $("clear").addEventListener("click",function(){tasks=tasks.filter(function(t){return t.daily||!t.doneOn});save();render()});
+  $("theme").addEventListener("click",function(){
+    var r=document.documentElement,a=r.getAttribute("data-theme");
+    var dark=a==="dark"||(!a&&matchMedia("(prefers-color-scheme:dark)").matches);
+    r.setAttribute("data-theme",dark?"light":"dark");
+  });
+
+  function initDb(){
+    if(!window.claude||!claude.use)return;
+    Promise.all([claude.use("db"),claude.use("user")]).then(function(r){
+      var db=r[0],u=r[1];if(!db||!u)return;
+      return u.id().then(function(id){
+        if(!id)return;
+        var ref=db.collection("data/users/"+id).doc("tasks");
+        ref.onSnapshot(function(snap){
+          store=ref;
+          if(!snap.exists){if(tasks.length)ref.set({list:tasks}).catch(function(){});return}
+          var list=(snap.data()||{}).list;if(!Array.isArray(list)||saveT)return;
+          list=JSON.parse(JSON.stringify(list));
+          if(JSON.stringify(list)===JSON.stringify(tasks))return;
+          tasks=list;tasks.forEach(function(t){if(t.h==null)t.h=nextHue()});
+          try{localStorage.setItem(KEY,JSON.stringify(tasks))}catch(e){}
+          render();
+        },function(){});
+      });
+    }).catch(function(){});
+  }
+  load();render();setInterval(render,60000);initDb();
+})();
+</script>
+</body>
+</html>
